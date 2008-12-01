@@ -58,6 +58,7 @@ import org.sakaiproject.tool.api.SessionBindingEvent;
 import org.sakaiproject.tool.api.SessionBindingListener;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.user.api.AuthenticatedUserProvider;
+import org.sakaiproject.user.api.AuthenticationIdUDP;
 import org.sakaiproject.user.api.AuthenticationManager;
 import org.sakaiproject.user.api.DisplayAdvisorUDP;
 import org.sakaiproject.user.api.User;
@@ -712,6 +713,22 @@ public abstract class BaseUserDirectoryService implements UserDirectoryService, 
 		putCachedUser(userReference(user.getId()), user);
 
 		return user;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public User getUserByAid(String aid) throws UserNotDefinedException
+	{
+		if (serverConfigurationService().getBoolean("login.has.aid", false) && m_provider instanceof AuthenticationIdUDP)
+		{
+			UserEdit user = new BaseUserEdit();
+			if (((AuthenticationIdUDP)m_provider).getUserbyAid(aid, user))
+			{
+				return user;
+			}
+		}
+		return getUserByEid(aid);
 	}
 
 	/**
