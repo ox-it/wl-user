@@ -725,6 +725,9 @@ public abstract class BaseUserDirectoryService implements UserDirectoryService, 
 			UserEdit user = new BaseUserEdit();
 			if (((AuthenticationIdUDP)m_provider).getUserbyAid(aid, user))
 			{
+				String id = m_storage.checkMapForId(user.getEid());
+				user.setId(id);
+				ensureMappedIdForProvidedUser(user);
 				return user;
 			}
 		}
