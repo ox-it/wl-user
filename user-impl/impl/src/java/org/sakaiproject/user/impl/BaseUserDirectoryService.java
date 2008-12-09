@@ -579,7 +579,7 @@ public abstract class BaseUserDirectoryService implements UserDirectoryService, 
 		String id = m_storage.checkMapForId(eid);
 		if (id != null) return id;
 
-		// Try the provider.
+		// Try the provider. - should we switch to Aid here?
 		UserEdit user = getProvidedUserByEid(id, eid);
 		if (user != null)
 		{
@@ -720,15 +720,24 @@ public abstract class BaseUserDirectoryService implements UserDirectoryService, 
 	 */
 	public User getUserByAid(String aid) throws UserNotDefinedException
 	{
-		if (serverConfigurationService().getBoolean("login.has.aid", false) && m_provider instanceof AuthenticationIdUDP)
+		if (serverConfigurationService().getBoolean("login.has.aid", false))
 		{
-			UserEdit user = new BaseUserEdit();
-			if (((AuthenticationIdUDP)m_provider).getUserbyAid(aid, user))
+			if (m_provider instanceof AuthenticationIdUDP)
 			{
-				String id = m_storage.checkMapForId(user.getEid());
-				user.setId(id);
-				ensureMappedIdForProvidedUser(user);
-				return user;
+				UserEdit user = new BaseUserEdit();
+				if (((AuthenticationIdUDP)m_provider).getUserbyAid(aid, user))
+				{
+					String id = m_storage.checkMapForId(user.getEid());
+					user.setId(id);
+					ensureMappedIdForProvidedUser(user);
+					putCachedUser(user.getReference(), user);
+					return user;
+				}
+				throw new UserNotDefinedException(aid);
+			}
+			else
+			{
+				M_log.warn("login.has.aid is true but UserDirectoryProvider doesn't implement AuthenticationIdUDP");
 			}
 		}
 		return getUserByEid(aid);
