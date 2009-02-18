@@ -658,7 +658,7 @@ public abstract class DbUserService extends BaseUserDirectoryService
 	/**
 	 * @return the cache
 	 */
-	public Cache getCache()
+	public Cache getIdEidCache()
 	{
 		return cache;
 	}
@@ -666,7 +666,7 @@ public abstract class DbUserService extends BaseUserDirectoryService
 	/**
 	 * @param cache the cache to set
 	 */
-	public void setCache(Cache cache)
+	public void setIdEidCache(Cache cache)
 	{
 		this.cache = cache;
 	}
