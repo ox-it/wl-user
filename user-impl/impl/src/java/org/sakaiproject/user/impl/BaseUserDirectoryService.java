@@ -1465,7 +1465,7 @@ public abstract class BaseUserDirectoryService implements UserDirectoryService, 
 			// locally stored users.
 			try
 			{
-				user = (UserEdit)getUserByEid(loginId);
+				user = (UserEdit)getUserByAid(loginId);
 			} catch (UserNotDefinedException e)
 			{
 				return null;
