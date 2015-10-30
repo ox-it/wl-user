@@ -80,6 +80,7 @@ import org.sakaiproject.util.ExternalTrustedEvidence;
 import org.sakaiproject.util.RequestFilter;
 import org.sakaiproject.util.ResourceLoader;
 import org.sakaiproject.util.StringUtil;
+import org.sakaiproject.util.Validator;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -1096,7 +1097,12 @@ public class UsersAction extends PagedResourceActionII
 				addAlert(state, rb.getString("useact.invemail"));	
 				return false;
 		}
-		
+		if(ServerConfigurationService.getBoolean("edituser.validate.emailDomain",true) && !Validator. isAllowedLocalEmailDomain(email)) {
+			addAlert(state, rb.getFormattedMessage("useedi.emailbaddomain",new String[]{ServerConfigurationService.getString("invalidNonOfficialAccountString")
+					 ,ServerConfigurationService.getString("localUserAccount",rb.getString("official.user.name"))}));
+			return false;
+		}
+
 		// get the user
 		UserEdit user = (UserEdit) state.getAttribute("user");
 		
@@ -1701,4 +1707,5 @@ public class UsersAction extends PagedResourceActionII
 		}
 		return provided;
 	}
+
 }
