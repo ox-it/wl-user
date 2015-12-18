@@ -38,6 +38,8 @@ import net.tanesha.recaptcha.ReCaptchaResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.sakaiproject.accountvalidator.logic.ValidationLogic;
+import org.sakaiproject.accountvalidator.model.ValidationAccount;
 import org.sakaiproject.authz.cover.SecurityService;
 import org.sakaiproject.cheftool.Context;
 import org.sakaiproject.cheftool.ControllerState;
@@ -50,6 +52,7 @@ import org.sakaiproject.cheftool.api.Menu;
 import org.sakaiproject.cheftool.api.MenuItem;
 import org.sakaiproject.cheftool.menu.MenuEntry;
 import org.sakaiproject.cheftool.menu.MenuImpl;
+import org.sakaiproject.component.cover.ComponentManager;
 import org.sakaiproject.component.cover.ServerConfigurationService;
 import org.sakaiproject.content.api.ContentResource;
 import org.sakaiproject.content.api.FilePickerHelper;
@@ -103,6 +106,11 @@ public class UsersAction extends PagedResourceActionII
 	private static final String IMPORT_EMAIL="email";
 	private static final String IMPORT_PASSWORD="password";
 	private static final String IMPORT_TYPE="type";
+	private ValidationLogic validationLogic;
+
+	public UsersAction() {
+		this.validationLogic = (ValidationLogic)ComponentManager.get(ValidationLogic.class);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -802,6 +810,11 @@ public class UsersAction extends PagedResourceActionII
 		{
 			try
 			{
+				String valueEmail = (String)state.getAttribute("valueEmail");
+				if (StringUtils.trimToNull(valueEmail) != null && EmailValidator.getInstance().isValid(edit.getEid()) && !edit.getEid().equalsIgnoreCase(valueEmail)) {
+					validationLogic.createValidationAccount(edit.getId(),valueEmail);
+					addAlert(state,rb.getFormattedMessage("useedi.val.email",new String[]{valueEmail}));
+				}
 				UserDirectoryService.commitEdit(edit);
 			}
 			catch (UserAlreadyDefinedException e)
@@ -1105,6 +1118,13 @@ public class UsersAction extends PagedResourceActionII
 
 		// get the user
 		UserEdit user = (UserEdit) state.getAttribute("user");
+			try {
+				UserDirectoryService.getUserByEid(email);
+				addAlert(state,rb.getString("useedi.email.exists"));
+				return false;
+			} catch (UserNotDefinedException e) {
+				//unique user ,so continue
+			}
 		
 		//process any additional attributes
 		//we continue processing these until we get an empty attribute KEY
