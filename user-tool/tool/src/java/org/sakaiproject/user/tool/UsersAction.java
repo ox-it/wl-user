@@ -1120,8 +1120,12 @@ public class UsersAction extends PagedResourceActionII
 		UserEdit user = (UserEdit) state.getAttribute("user");
 			try {
 				UserDirectoryService.getUserByEid(email);
-				addAlert(state,rb.getString("useedi.email.exists"));
-				return false;
+				//If we have shown this 'email exists' message once and user still wants to create account with the same email address, continue with the process
+				String alertMessage = StringUtils.trimToNull(data.getParameters().getString("alert_message"));
+				if(!(alertMessage != null && alertMessage.equals(rb.getString("useedi.email.exists")))){
+					addAlert(state,rb.getString("useedi.email.exists"));
+					return false;
+				}
 			} catch (UserNotDefinedException e) {
 				//unique user ,so continue
 			}
