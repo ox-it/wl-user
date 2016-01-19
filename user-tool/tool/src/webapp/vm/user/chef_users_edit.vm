@@ -90,9 +90,9 @@ function removeOptionalAttributeBlock(elem) {
 					$tlang.getString("useconrem.ema")
 				</label>
 			#if ($service.allowUpdateUserEmail($user.Id) || !$user)
-				<input type="text" name="email" id="email"#if($user)value="$validator.escapeHtml($user.Email)"#elseif($valueEmail)value="$validator.escapeHtml($valueEmail)"#end />
+				<input type="text" name="email" id="email"#if($valueEmail)value="$validator.escapeHtml($valueEmail)"#elseif($user)value="$validator.escapeHtml($user.Email)"#end />
 			#else
-				#if($user)$validator.escapeHtml($user.Email)#elseif($valueEmail)$validator.escapeHtml($valueEmail)#end
+				#if($valueEmail)$validator.escapeHtml($valueEmail)#elseif($user)$validator.escapeHtml($user.Email)#end
 			#end
 			</p>	
 #if ($incPw)
@@ -222,6 +222,7 @@ function removeOptionalAttributeBlock(elem) {
 				<input type="submit" name="eventSubmit_doCancel" value="$tlang.getString("useedi.can")" accesskey="x" />
 			</div>
 			<input type="hidden" name="sakai_csrf_token" value="$sakai_csrf_token" />
+			<input type="hidden" name="alert_message" id="alert_message" value="$alertMessage" />
 		</form>
 	</div>
 
