@@ -806,12 +806,15 @@ public class UsersAction extends PagedResourceActionII
 
 		// commit the change
 		UserEdit edit = (UserEdit) state.getAttribute("user");
+		String valueEmail = (String)state.getAttribute("valueEmail");
+		String oldEmail = (String)state.getAttribute("oldEmail");
 		if (edit != null)
 		{
 			try
 			{
-				String valueEmail = (String)state.getAttribute("valueEmail");
-				if (StringUtils.trimToNull(valueEmail) != null && EmailValidator.getInstance().isValid(edit.getEid()) && !edit.getEid().equalsIgnoreCase(valueEmail)) {
+				//start this validation only when user has changed the email for the account else skip, also skip for admin user
+				if (!SecurityService.isSuperUser() && StringUtils.trimToNull(valueEmail) != null && StringUtils.trimToNull(oldEmail) != null && !(oldEmail.equals(valueEmail))
+						&& EmailValidator.getInstance().isValid(edit.getEid()) && !edit.getEid().equalsIgnoreCase(valueEmail)) {
 					validationLogic.createValidationAccount(edit.getId(),valueEmail);
 					addAlert(state,rb.getFormattedMessage("useedi.val.email",new String[]{valueEmail}));
 				}
@@ -1118,17 +1121,18 @@ public class UsersAction extends PagedResourceActionII
 
 		// get the user
 		UserEdit user = (UserEdit) state.getAttribute("user");
+		//if user has not changed the email then skip the 'email exists' verification. Also, skip it when user is admin
+		if(!SecurityService.isSuperUser() && user != null && !(user.getEmail().equals(email))){
 			try {
 				UserDirectoryService.getUserByEid(email);
-				//If we have shown this 'email exists' message once and user still wants to create account with the same email address, continue with the process
-				String alertMessage = StringUtils.trimToNull(data.getParameters().getString("alert_message"));
-				if(!(alertMessage != null && alertMessage.equals(rb.getString("useedi.email.exists")))){
-					addAlert(state,rb.getString("useedi.email.exists"));
-					return false;
-				}
+				addAlert(state,rb.getString("useedi.email.exists"));
+				return false;
 			} catch (UserNotDefinedException e) {
 				//unique user ,so continue
 			}
+			//user has changed the email so save the old email in the state
+			state.setAttribute("oldEmail",user.getEmail());
+		}
 		
 		//process any additional attributes
 		//we continue processing these until we get an empty attribute KEY
